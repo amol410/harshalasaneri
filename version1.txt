@@ -1,0 +1,37 @@
+Core Features
+
+Basic Symptom Checker
+
+Simple symptom input via text search
+Basic body map (front/back view)
+Severity levels (mild/moderate/severe)
+Duration tracking (hours/days/weeks)
+Top 3 possible conditions based on symptoms
+
+
+Essential Health Records
+
+Manual health profile creation (age, gender, blood type, allergies)
+Document upload (PDF, images)
+Basic categorization (prescriptions, lab reports, general)
+Simple list view of all records
+
+
+Basic Security
+
+Email/password authentication
+PIN/biometric lock
+Local device storage encryption
+
+
+Simple UI
+
+Clean home dashboard
+Basic navigation (Home, Symptoms, Records, Profile)
+Light theme only
+English language only
+
+
+
+Target Users: Early adopters, tech-savvy individuals
+Goal: Validate core concept and gather user feedback

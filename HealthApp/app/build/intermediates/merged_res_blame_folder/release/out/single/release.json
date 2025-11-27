@@ -1,0 +1,10 @@
+[
+    {
+        "merged": "com.healthapp-merged_res-47:/drawable_appicon.jpg.flat",
+        "source": "com.healthapp-main-48:/drawable/appicon.jpg"
+    },
+    {
+        "merged": "com.healthapp-merged_res-47:/drawable_ic_launcher.xml.flat",
+        "source": "com.healthapp-main-48:/drawable/ic_launcher.xml"
+    }
+]
