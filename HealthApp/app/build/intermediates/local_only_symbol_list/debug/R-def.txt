@@ -1,11 +1,21 @@
 R_DEF: Internal format may change without notice
 local
+color background_light
 color black
-color purple_200
-color purple_500
-color purple_700
-color teal_200
-color teal_700
+color card_white
+color error_red
+color error_red_light
+color gray_light
+color gray_medium
+color primary_blue
+color primary_blue_dark
+color primary_blue_light
+color secondary_purple
+color secondary_purple_light
+color success_green
+color success_green_light
+color text_primary
+color text_secondary
 color white
 drawable appicon
 drawable ic_launcher
