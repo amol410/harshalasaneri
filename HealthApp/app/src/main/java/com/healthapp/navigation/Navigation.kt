@@ -1,6 +1,5 @@
 package com.healthapp.navigation
 
-import HomeScreen
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
@@ -70,6 +69,12 @@ fun HealthAppNavigation(viewModel: HealthAppViewModel = viewModel()) {
                     viewModel.deleteVaccination(id)
                 }
             )
+        }
+        composable("symptoms") {
+            SymptomsScreen(navController = navController)
+        }
+        composable("records") {
+            RecordsScreen(navController = navController)
         }
     }
 }

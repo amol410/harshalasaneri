@@ -1,3 +1,5 @@
+package com.healthapp.screens
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -402,58 +404,6 @@ fun HomeScreen(navController: NavController) {
 
 
 // -------------------- Helper Components --------------------
-
-@Composable
-fun QuickActionItem(
-    icon: ImageVector,
-    label: String,
-    color: Color,
-    onClick: () -> Unit
-) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier
-            .clickable(onClick = onClick)
-            .width(90.dp)
-    ) {
-        Box(
-            modifier = Modifier
-                .size(70.dp)
-                .clip(RoundedCornerShape(20.dp))
-                .background(color),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                icon,
-                contentDescription = null,
-                tint = Color.Black,
-                modifier = Modifier.size(32.dp)
-            )
-        }
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Text(
-            label,
-            textAlign = TextAlign.Center,
-            fontSize = 14.sp
-        )
-    }
-}
-
-@Composable
-fun ActivityItem(icon: ImageVector, title: String, subtitle: String) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
-        Spacer(modifier = Modifier.width(16.dp))
-        Column {
-            Text(title, fontWeight = FontWeight.Medium)
-            Text(subtitle, color = Color.Gray, fontSize = 13.sp)
-        }
-    }
-}
-
-// Helper composable functions
 @Composable
 fun QuickActionItem(
     icon: ImageVector,

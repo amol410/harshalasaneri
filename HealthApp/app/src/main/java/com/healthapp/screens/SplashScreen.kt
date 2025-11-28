@@ -35,12 +35,55 @@ import androidx.compose.ui.graphics.drawscope.translate
 
 @Composable
 fun SplashScreen(navController: NavController) {
-    // Simple animation values without complex delegate issues
-    val pulseScale = 1f  // Static value to avoid delegate issues
-    val pulseScale2 = 1f  // Static value to avoid delegate issues
-    val dotScale1 = 1f  // Static value to avoid delegate issues
-    val dotScale2 = 1f  // Static value to avoid delegate issues
-    val dotScale3 = 1f  // Static value to avoid delegate issues
+    // Animated pulse values
+    val infiniteTransition = rememberInfiniteTransition(label = "pulse")
+    val pulseScale = infiniteTransition.animateFloat(
+        initialValue = 1f,
+        targetValue = 1.2f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1500, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "pulse1"
+    )
+    val pulseScale2 = infiniteTransition.animateFloat(
+        initialValue = 1f,
+        targetValue = 1.3f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(2000, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "pulse2"
+    )
+
+    // Animated dots
+    val dotScale1 = infiniteTransition.animateFloat(
+        initialValue = 0.5f,
+        targetValue = 1.2f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(600, easing = FastOutSlowInEasing, delayMillis = 0),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "dot1"
+    )
+    val dotScale2 = infiniteTransition.animateFloat(
+        initialValue = 0.5f,
+        targetValue = 1.2f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(600, easing = FastOutSlowInEasing, delayMillis = 200),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "dot2"
+    )
+    val dotScale3 = infiniteTransition.animateFloat(
+        initialValue = 0.5f,
+        targetValue = 1.2f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(600, easing = FastOutSlowInEasing, delayMillis = 400),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "dot3"
+    )
 
     Box(
         modifier = Modifier
@@ -64,7 +107,7 @@ fun SplashScreen(navController: NavController) {
         ) {
             drawCircle(
                 color = Color.White.copy(alpha = 0.1f),
-                radius = 100f * pulseScale,
+                radius = 100f * pulseScale.value,
                 center = Offset(100f, 80f)
             )
         }
@@ -76,7 +119,7 @@ fun SplashScreen(navController: NavController) {
         ) {
             drawCircle(
                 color = Color.White.copy(alpha = 0.1f),
-                radius = 120f * pulseScale2,
+                radius = 120f * pulseScale2.value,
                 center = Offset(size.width - 100f, size.height - 100f)
             )
         }
@@ -193,15 +236,15 @@ fun SplashScreen(navController: NavController) {
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 LoadingDot(
-                    scale = dotScale1,
+                    scale = dotScale1.value,
                     color = Color.White
                 )
                 LoadingDot(
-                    scale = dotScale2,
+                    scale = dotScale2.value,
                     color = Color.White
                 )
                 LoadingDot(
-                    scale = dotScale3,
+                    scale = dotScale3.value,
                     color = Color.White
                 )
             }
@@ -224,8 +267,8 @@ fun LoadingDot(
 ) {
     Box(
         modifier = Modifier
-            .size(12.dp)
+            .size((12 * scale).dp)
             .clip(CircleShape)
-            .background(color)
+            .background(color.copy(alpha = (scale - 0.5f).coerceIn(0.5f, 1.0f)))
     )
 }
