@@ -1,6 +1,8 @@
 package com.healthapp.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -11,6 +13,7 @@ import com.healthapp.viewmodel.HealthAppViewModel
 @Composable
 fun HealthAppNavigation(viewModel: HealthAppViewModel = viewModel()) {
     val navController = rememberNavController()
+    val uploadedFiles by viewModel.uploadedFiles.collectAsState()
     NavHost(
         navController = navController,
         startDestination = "splash"
@@ -33,7 +36,7 @@ fun HealthAppNavigation(viewModel: HealthAppViewModel = viewModel()) {
                 onFileUpload = { file ->
                     viewModel.addFile(file)
                 },
-                uploadedFiles = viewModel.uploadedFiles.value,
+                uploadedFiles = uploadedFiles,
                 onDeleteFile = { id ->
                     viewModel.deleteFile(id)
                 }
@@ -50,7 +53,7 @@ fun HealthAppNavigation(viewModel: HealthAppViewModel = viewModel()) {
         composable("history") {
             HistoryScreen(
                 navController = navController,
-                uploadedFiles = viewModel.uploadedFiles.value,
+                uploadedFiles = uploadedFiles,
                 onDeleteFile = { id ->
                     viewModel.deleteFile(id)
                 }

@@ -34,6 +34,7 @@ fun HistoryScreen(
 ) {
     var searchQuery by remember { mutableStateOf("") }
     var filterType by remember { mutableStateOf("all") }
+    var filterExpanded by remember { mutableStateOf(false) }
     var deleteId by remember { mutableStateOf<String?>(null) }
     
     // Format date for display
@@ -114,8 +115,8 @@ fun HistoryScreen(
                     leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(48.dp)
-                        .padding(bottom = 8.dp)
+                        .padding(bottom = 12.dp),
+                    singleLine = true
                 )
                 
                 // Filter Row
@@ -123,38 +124,98 @@ fun HistoryScreen(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Icon(Icons.Default.FilterList, contentDescription = null)
-                    
+                    Icon(
+                        Icons.Default.FilterList,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+
                     ExposedDropdownMenuBox(
-                        expanded = false,
-                        onExpandedChange = { /* Handle expanded state */ }
+                        expanded = filterExpanded,
+                        onExpandedChange = { filterExpanded = !filterExpanded }
                     ) {
                         OutlinedTextField(
-                            value = filterType,
-                            onValueChange = { /* Handled by dropdown */ },
-                            label = { Text("Filter by type") },
-                            modifier = Modifier.fillMaxWidth(),
-                            trailingIcon = {
-                                ExposedDropdownMenuDefaults.TrailingIcon(expanded = false)
+                            value = when (filterType) {
+                                "all" -> "All Records"
+                                "lab_report" -> "Lab Reports"
+                                "prescription" -> "Prescriptions"
+                                "xray" -> "X-Rays"
+                                "scan" -> "Scans (CT/MRI)"
+                                "invoice" -> "Medical Invoices"
+                                "insurance" -> "Insurance Documents"
+                                "image" -> "Images"
+                                "document" -> "Documents"
+                                else -> filterType.replaceFirstChar { it.uppercase() }
                             },
-                            readOnly = true
+                            onValueChange = { },
+                            label = { Text("Filter by type") },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .menuAnchor(),
+                            trailingIcon = {
+                                ExposedDropdownMenuDefaults.TrailingIcon(expanded = filterExpanded)
+                            },
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                                unfocusedBorderColor = MaterialTheme.colorScheme.outline
+                            ),
+                            readOnly = true,
+                            singleLine = true
                         )
-                        
+
                         ExposedDropdownMenu(
-                            expanded = false,
-                            onDismissRequest = { /* Handle dismiss */ }
+                            expanded = filterExpanded,
+                            onDismissRequest = { filterExpanded = false }
                         ) {
-                            listOf("all", "document", "image").forEach { type ->
-                                val displayText = when (type) {
-                                    "all" -> "All Files"
-                                    "document" -> "Documents"
-                                    "image" -> "Images"
-                                    else -> type
-                                }
-                                
+                            // Filter options with icons
+                            val filterOptions = listOf(
+                                Triple("all", "All Records", Icons.Default.SelectAll),
+                                Triple("lab_report", "Lab Reports", Icons.Default.Science),
+                                Triple("prescription", "Prescriptions", Icons.Default.Medication),
+                                Triple("xray", "X-Rays", Icons.Default.LocalHospital),
+                                Triple("scan", "Scans (CT/MRI)", Icons.Default.Scanner),
+                                Triple("invoice", "Medical Invoices", Icons.Default.Receipt),
+                                Triple("insurance", "Insurance Documents", Icons.Default.Shield),
+                                Triple("image", "Images", Icons.Default.Image),
+                                Triple("document", "Documents", Icons.Default.Description)
+                            )
+
+                            filterOptions.forEach { (type, displayText, icon) ->
                                 DropdownMenuItem(
-                                    text = { Text(displayText) },
-                                    onClick = { filterType = type }
+                                    text = {
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                                        ) {
+                                            Icon(
+                                                icon,
+                                                contentDescription = null,
+                                                modifier = Modifier.size(20.dp),
+                                                tint = if (filterType == type)
+                                                    MaterialTheme.colorScheme.primary
+                                                else
+                                                    MaterialTheme.colorScheme.onSurfaceVariant
+                                            )
+                                            Text(
+                                                displayText,
+                                                fontWeight = if (filterType == type)
+                                                    FontWeight.Bold
+                                                else
+                                                    FontWeight.Normal,
+                                                color = if (filterType == type)
+                                                    MaterialTheme.colorScheme.primary
+                                                else
+                                                    MaterialTheme.colorScheme.onSurface
+                                            )
+                                        }
+                                    },
+                                    onClick = {
+                                        filterType = type
+                                        filterExpanded = false
+                                    },
+                                    leadingIcon = if (filterType == type) {
+                                        { Icon(Icons.Default.Check, contentDescription = null, tint = MaterialTheme.colorScheme.primary) }
+                                    } else null
                                 )
                             }
                         }

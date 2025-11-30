@@ -21,3 +21,4 @@ drawable appicon
 drawable ic_launcher
 string app_name
 style Theme.HealthApp
+xml file_paths

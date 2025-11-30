@@ -6,7 +6,10 @@
       "Bash(git push:*)",
       "Bash(git config:*)",
       "Bash(git remote set-url:*)",
-      "Bash(./gradlew assembleDebug:*)"
+      "Bash(./gradlew assembleDebug:*)",
+      "Bash(./gradlew build:*)",
+      "Bash(./gradlew clean build:*)",
+      "Bash(cat:*)"
     ],
     "deny": [],
     "ask": []

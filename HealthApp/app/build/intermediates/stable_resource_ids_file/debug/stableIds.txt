@@ -244,6 +244,7 @@ com.healthapp:attr/lStar = 0x7f010014
 com.healthapp:color/black = 0x7f020003
 com.healthapp:id/accessibility_custom_action_7 = 0x7f05001e
 com.healthapp:dimen/notification_top_pad = 0x7f030014
+com.healthapp:xml/file_paths = 0x7f0b0000
 com.healthapp:styleable/ActivityNavigator = 0x7f0a0000
 com.healthapp:id/accessibility_custom_action_16 = 0x7f050009
 com.healthapp:string/call_notification_answer_video_action = 0x7f080007

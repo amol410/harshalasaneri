@@ -1,5 +1,8 @@
 package com.healthapp.screens
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -15,12 +18,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.FileProvider
 import androidx.navigation.NavController
 import com.healthapp.ui.theme.HealthAppTheme
+import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -52,7 +58,56 @@ fun DoctorsAppointmentScreen(navController: NavController) {
     var tests by remember { mutableStateOf(emptyList<Test>()) }
     var appointments by remember { mutableStateOf(emptyList<Appointment>()) }
     var deleteAppointmentId by remember { mutableStateOf<String?>(null) }
-    
+
+    // Date and Time picker states
+    var showDatePicker by remember { mutableStateOf(false) }
+    var showTimePicker by remember { mutableStateOf(false) }
+    val datePickerState = rememberDatePickerState()
+    val timePickerState = rememberTimePickerState()
+
+    // Camera/Gallery selection dialog state
+    var showImageSourceDialog by remember { mutableStateOf(false) }
+    var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
+
+    val context = LocalContext.current
+
+    // Create a temporary file for camera
+    val photoFile = remember {
+        File.createTempFile(
+            "test_image_${System.currentTimeMillis()}",
+            ".jpg",
+            context.cacheDir
+        )
+    }
+
+    val photoUri = remember {
+        FileProvider.getUriForFile(
+            context,
+            "${context.packageName}.provider",
+            photoFile
+        )
+    }
+
+    // Camera launcher
+    val cameraLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.TakePicture()
+    ) { success ->
+        if (success) {
+            selectedImageUri = photoUri
+            // Image captured successfully, you can use photoUri
+        }
+    }
+
+    // Gallery launcher
+    val galleryLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        uri?.let {
+            selectedImageUri = it
+            // Image selected from gallery, you can use uri
+        }
+    }
+
     // Format date for display
     fun formatDate(dateString: String): String {
         if (dateString.isEmpty()) return ""
@@ -215,21 +270,39 @@ fun DoctorsAppointmentScreen(navController: NavController) {
                         // Date
                         OutlinedTextField(
                             value = appointmentDate,
-                            onValueChange = { appointmentDate = it },
+                            onValueChange = { },
                             label = { Text("Date") },
                             leadingIcon = { Icon(Icons.Default.CalendarToday, contentDescription = null) },
-                            modifier = Modifier.weight(1f),
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
+                            modifier = Modifier
+                                .weight(1f)
+                                .clickable { showDatePicker = true },
+                            readOnly = true,
+                            enabled = false,
+                            colors = OutlinedTextFieldDefaults.colors(
+                                disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                                disabledBorderColor = MaterialTheme.colorScheme.outline,
+                                disabledLeadingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
                         )
-                        
+
                         // Time
                         OutlinedTextField(
                             value = appointmentTime,
-                            onValueChange = { appointmentTime = it },
+                            onValueChange = { },
                             label = { Text("Time") },
                             leadingIcon = { Icon(Icons.Default.AccessTime, contentDescription = null) },
-                            modifier = Modifier.weight(1f),
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
+                            modifier = Modifier
+                                .weight(1f)
+                                .clickable { showTimePicker = true },
+                            readOnly = true,
+                            enabled = false,
+                            colors = OutlinedTextFieldDefaults.colors(
+                                disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                                disabledBorderColor = MaterialTheme.colorScheme.outline,
+                                disabledLeadingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
                         )
                     }
                     Spacer(modifier = Modifier.height(8.dp))
@@ -265,33 +338,49 @@ fun DoctorsAppointmentScreen(navController: NavController) {
                         modifier = Modifier.padding(bottom = 12.dp)
                     )
                     
-                    // Add Test Input
+                    // Add Test Input - Row 1: Test Name and Add button
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(bottom = 12.dp),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            .padding(bottom = 8.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
                         OutlinedTextField(
                             value = testName,
                             onValueChange = { testName = it },
-                            label = { Text("e.g., Blood Test, X-Ray, ECG") },
+                            label = { Text("Test Name") },
+                            placeholder = { Text("Blood Test, X-Ray, ECG") },
                             modifier = Modifier.weight(1f),
-                            trailingIcon = {
-                                IconButton(onClick = { addTest() }) {
-                                    Icon(Icons.Default.Add, contentDescription = "Add Test")
-                                }
-                            }
+                            singleLine = true
                         )
                         Button(
-                            onClick = { addTest() },
-                            modifier = Modifier.height(56.dp)
+                            onClick = { showImageSourceDialog = true },
+                            modifier = Modifier.height(56.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.secondary
+                            )
                         ) {
                             Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.padding(end = 4.dp))
-                            Text("Add Test")
+                            Text("Add")
                         }
                     }
-                    
+
+                    // Row 2: Submit Button
+                    Button(
+                        onClick = { addTest() },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 12.dp)
+                            .height(56.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary
+                        )
+                    ) {
+                        Icon(Icons.Default.Upload, contentDescription = null, modifier = Modifier.padding(end = 8.dp))
+                        Text("Submit Test", fontSize = 16.sp, fontWeight = FontWeight.Medium)
+                    }
+
                     // Tests List
                     if (tests.isEmpty()) {
                         Box(
@@ -603,6 +692,192 @@ fun DoctorsAppointmentScreen(navController: NavController) {
                                 text = "Make sure to complete all required tests before your appointment. Arrive 15 minutes early and bring your ID and insurance card.",
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Camera/Gallery Selection Dialog
+    if (showImageSourceDialog) {
+        AlertDialog(
+            onDismissRequest = { showImageSourceDialog = false },
+            title = {
+                Text(
+                    "Select Image Source",
+                    fontWeight = FontWeight.Bold
+                )
+            },
+            text = {
+                Column {
+                    Text(
+                        "Choose where to get the test image from:",
+                        modifier = Modifier.padding(bottom = 16.dp)
+                    )
+
+                    // Camera Option
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 8.dp)
+                            .clickable {
+                                showImageSourceDialog = false
+                                cameraLauncher.launch(photoUri)
+                            },
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.primaryContainer
+                        )
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            Icon(
+                                Icons.Default.CameraAlt,
+                                contentDescription = "Camera",
+                                modifier = Modifier.size(32.dp),
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                            Column {
+                                Text(
+                                    "Camera",
+                                    fontWeight = FontWeight.Medium,
+                                    fontSize = 16.sp
+                                )
+                                Text(
+                                    "Take a photo",
+                                    fontSize = 12.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                    }
+
+                    // Gallery Option
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                showImageSourceDialog = false
+                                galleryLauncher.launch("image/*")
+                            },
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.secondaryContainer
+                        )
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            Icon(
+                                Icons.Default.PhotoLibrary,
+                                contentDescription = "Gallery",
+                                modifier = Modifier.size(32.dp),
+                                tint = MaterialTheme.colorScheme.secondary
+                            )
+                            Column {
+                                Text(
+                                    "Gallery",
+                                    fontWeight = FontWeight.Medium,
+                                    fontSize = 16.sp
+                                )
+                                Text(
+                                    "Choose from files",
+                                    fontSize = 12.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                    }
+                }
+            },
+            confirmButton = { },
+            dismissButton = {
+                TextButton(onClick = { showImageSourceDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
+
+    // Date Picker Dialog
+    if (showDatePicker) {
+        DatePickerDialog(
+            onDismissRequest = { showDatePicker = false },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        datePickerState.selectedDateMillis?.let { millis ->
+                            val calendar = Calendar.getInstance()
+                            calendar.timeInMillis = millis
+                            val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+                            appointmentDate = dateFormat.format(calendar.time)
+                        }
+                        showDatePicker = false
+                    }
+                ) {
+                    Text("OK")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDatePicker = false }) {
+                    Text("Cancel")
+                }
+            }
+        ) {
+            DatePicker(state = datePickerState)
+        }
+    }
+
+    // Time Picker Dialog
+    if (showTimePicker) {
+        AlertDialog(
+            onDismissRequest = { showTimePicker = false }
+        ) {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surface
+                )
+            ) {
+                Column(
+                    modifier = Modifier.padding(24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "Select Time",
+                        style = MaterialTheme.typography.titleLarge,
+                        modifier = Modifier.padding(bottom = 16.dp)
+                    )
+                    TimePicker(state = timePickerState)
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 24.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End)
+                    ) {
+                        TextButton(onClick = { showTimePicker = false }) {
+                            Text("Cancel")
+                        }
+                        TextButton(
+                            onClick = {
+                                val hour = timePickerState.hour
+                                val minute = timePickerState.minute
+                                appointmentTime = String.format("%02d:%02d", hour, minute)
+                                showTimePicker = false
+                            }
+                        ) {
+                            Text("OK")
                         }
                     }
                 }
